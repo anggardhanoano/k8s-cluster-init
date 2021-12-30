@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail-sender-deployment
+  labels:
+    kelompok: yang-belum-siap
+    app: mail-sender
+    type: deployment
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: mail-sender
+      type: pods
+    matchExpressions:
+      - key: env
+        operator: NotIn
+        values:
+          - dev
+          - staging
+  template:
+    metadata:
+      name: mail-sender-pods
+      labels:
+        kelompok: yang-belum-siap
+        app: mail-sender
+        type: pods
+        env: prod
+    spec:
+      containers:
+        - name: mail-sender
+          image: benway/mail-rest
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: mail-sender-cm
+            - secretRef:
+                name: mail-sender-secret
+          readinessProbe:
+            exec:
+              command:
+                - echo
+                - healthy
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3

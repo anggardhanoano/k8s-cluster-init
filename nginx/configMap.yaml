@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  nginx.conf: |
+    events { worker_connections 1024;}
+
+    http {
+      upstream nodes {
+        server 172.31.1.250:30001 max_fails=1 fail_timeout=60s;
+        server 172.31.11.105:30001 max_fails=1 fail_timeout=60s;
+        server 172.31.9.223:30001 max_fails=1 fail_timeout=60s;
+      }
+
+      server {
+        listen 80;
+
+        location / {
+          proxy_pass http://nodes;
+        }
+      }
+    }
